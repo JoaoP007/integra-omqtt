@@ -1,32 +1,38 @@
 const http = require("http");
 const path = require("path");
+const express = require("express");
 const RED = require("node-red");
 
-// Cria o servidor HTTP
-const server = http.createServer();
+const app = express();
 
-// Pasta onde o Node-RED vai guardar flows, credenciais etc.
-// Aqui uso a própria pasta do projeto:
+// Porta usada pela Render
+const port = process.env.PORT || 1880;
+
+// Diretório onde flows.json ficará armazenado
 const userDir = path.join(__dirname, ".");
 
+// Configurações do Node-RED
 const settings = {
-  httpAdminRoot: "/",           // editor na raiz
-  httpNodeRoot: "/",            // endpoints HTTP na raiz
-  uiPort: process.env.PORT || 1880,
-  userDir: userDir,             // 👈 ESSENCIAL
-  flowFile: "flows.json",       // nome do arquivo de flows
-  functionGlobalContext: {}
+    httpAdminRoot: "/",
+    httpNodeRoot: "/",
+    userDir: userDir,
+    flowFile: "flows.json",
+    functionGlobalContext: {},
 };
 
-RED.init(server, settings);
+// Inicializa o Node-RED
+RED.init(app, settings);
 
-server.on("request", (req, res) => {
-  RED.httpAdmin(req, res);
-  RED.httpNode(req, res);
-});
+// Roteia / para o editor do Node-RED
+app.use(settings.httpAdminRoot, RED.httpAdmin);
+app.use(settings.httpNodeRoot, RED.httpNode);
 
-server.listen(settings.uiPort, () => {
-  console.log("Node-RED rodando na porta", settings.uiPort);
+// Inicia servidor HTTP
+const server = http.createServer(app);
+
+// Inicia servidor Node-RED
+server.listen(port, () => {
+    console.log(`Node-RED rodando na porta ${port}`);
 });
 
 RED.start();
