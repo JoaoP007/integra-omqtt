@@ -1,0 +1,8 @@
+{
+  "name": "node-red-horta",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "node-red": "*"
+  }
+}
